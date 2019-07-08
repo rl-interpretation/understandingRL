@@ -36,13 +36,16 @@ flags.DEFINE_float('resign_disable_pct', 0.05,
 flags.declare_key_flag('verbose')
 flags.declare_key_flag('num_readouts')
 
-save_path = 'results/no_clip_'
+save_path = 'results/'
 
 FLAGS = flags.FLAGS
 N = 19
 readouts = 50
 
 def cross_entropy_mcts(dict1, dict2, a_b):
+	'''
+		This function calculates cross entropy of probability distributions of actions in dict2 wrt dict1 (without considering a_b)
+	'''
     P1 = [] #values of moves in dictP^dictQ wrt P
     P2 = [] #values of moves in dictP^dictQ wrt Q
     for move in dict1:
@@ -59,6 +62,9 @@ def cross_entropy_mcts(dict1, dict2, a_b):
     return (KL)/(KL + 1.)
 
 def perturb_position(pos, new_board=None, memodict={}):
+	'''
+		This function returns Position of the perturbed board (new_board)
+	'''
     if new_board is None:
         new_board = np.copy(pos.board)
     new_lib_tracker = LibertyTracker.from_board(new_board)
@@ -86,6 +92,9 @@ def get_mcts_player(network, pos):
     return player
 
 def cross_entropy(policy, new_policy, best_move):
+	'''
+		This function calculates normalized cross entropy of new policy wrt policy (without considering best_move)
+	'''
      
     p = policy[:best_move]
     p = np.append(p, policy[best_move+1:])
@@ -100,20 +109,23 @@ def cross_entropy(policy, new_policy, best_move):
 
     return K
 
-def saliency_on_atari_frame(saliency, atari, fudge_factor, channel=2):
-    # sometimes saliency maps are a bit clearer if you blur them
-    # slightly...sigma adjusts the radius of that blur
+def saliency_combine(saliency, frame, blur, channel=2):
+    '''
+		Combines heatmaps in different channels
+    '''
     pmax = saliency.max()
-
     S = saliency
-    S -= S.min() ; S = fudge_factor*pmax * S / S.max()
-    I = atari.astype('uint16')
+    S -= S.min() ; S = blur*pmax * S / S.max()
+    I = frame.astype('uint16')
     I[:,:,channel] += S.astype('uint16')
     I = I.clip(1,255).astype('uint8')
     return I
 
 
 def play_network(network, board=None):
+	'''
+		Generates saliency maps of 3 methods given a board position
+	'''
     pos = Position(board=board)
     original_moves = {}
     heatmap = np.zeros((N,N), dtype=np.float)
@@ -205,12 +217,12 @@ def play_network(network, board=None):
     plt.savefig(save_path + 'entropy.png')
     plt.show()
 
-def simulate(network, board = None):
+def simulate(network, board = None, steps=20):
+	'''
+		Simulates rollout of network for given number of steps (to help understand the tactic)
+	'''
     pos = Position(board=board)
-    
-
-    count = 20
-    for i in range(count):
+    for i in range(steps):
         policy, V = network.run(pos)
         
         best_move = np.argmax(policy)
@@ -219,14 +231,6 @@ def simulate(network, board = None):
         print(pos)
 
 def play_mcts(network, board=None):
-    """Plays out a self-play match, returning a MCTSPlayer object containing:
-        - the final position
-        - the n x 362 tensor of floats representing the mcts search probabilities
-        - the n-ary tensor of floats representing the original value-net estimate
-          where n is the number of moves in the game
-    """
-    # Disable resign in 5% of games
-    
     pos = Position(board=board)
 
     player = get_mcts_player(network, pos)
@@ -309,10 +313,9 @@ def play_mcts(network, board=None):
 
 
 def main(argv):
-    network = dual_net.DualNetwork('minigo-models/models/000737-fury')
-    # network = dual_net.DualNetwork(None)
+    network = dual_net.DualNetwork('minigo-models/models/000737-fury')		# add path to model
 
-    board = np.zeros([19, 19], dtype=np.int8)
+    board = np.zeros([N, N], dtype=np.int8)
     # pos_w_con = list(replay_sgf_file('go_puzzles/14511/14511.sgf'))
 
 
@@ -406,13 +409,12 @@ def main(argv):
     # # board[12, 13] = 1
     # board[17, 16] = -1
 
-    # board[abs(board)==1] *= -1
+    # board[abs(board)==1] *= -1	# to invert the board colors
 
     pos = Position(board = board)
     print(pos)
-    # simulate(network, board)
+    # simulate(network, board, steps=10)
     play_network(network, board)
-    # play_mcts(network, board)
 
 if __name__ == '__main__':
     app.run(main)
