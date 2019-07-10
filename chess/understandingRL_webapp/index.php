@@ -14,8 +14,9 @@
 </head>
 
 <body>
-	<div style="width: 1000px">
-	    <div id="myBoard" style="width: 400px; float: left;"></div>
+	<div style="width: 850px; padding-left: 300px; padding-top: 200px;">
+		<!-- <div style="width: 200px; float: left;"></div> -->
+	    <div id="myBoard" style="width: 400px; float: left"></div>
 	    <div id='map' style="width: 400px; float: right;"></div>
     </div>
     <!-- <input type="button" id="startPositionBtn5" value="|<" />
