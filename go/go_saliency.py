@@ -188,7 +188,7 @@ def play_network(network, board=None):
     frame = saliency_combine(atariP, frame, blur=256, channel=0)
 
     plt.figure(1)
-    plt.imshow(atariV, cmap = 'Blues')
+    plt.imshow(atariV, cmap = 'Reds')
     plt.colorbar()
     plt.savefig(save_path + 'atariV.png')
     plt.show()
