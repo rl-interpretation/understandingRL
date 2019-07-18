@@ -17,7 +17,7 @@ from strategies import MCTSPlayer
 import math
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
-from scipy.misc import imresize
+from scipy.misc.pilutil import imresize
 
 import utils
 
@@ -43,9 +43,9 @@ N = 19
 readouts = 50
 
 def cross_entropy_mcts(dict1, dict2, a_b):
-	'''
+    '''
 		This function calculates cross entropy of probability distributions of actions in dict2 wrt dict1 (without considering a_b)
-	'''
+    '''
     P1 = [] #values of moves in dictP^dictQ wrt P
     P2 = [] #values of moves in dictP^dictQ wrt Q
     for move in dict1:
@@ -62,9 +62,9 @@ def cross_entropy_mcts(dict1, dict2, a_b):
     return (KL)/(KL + 1.)
 
 def perturb_position(pos, new_board=None, memodict={}):
-	'''
+    '''
 		This function returns Position of the perturbed board (new_board)
-	'''
+    '''
     if new_board is None:
         new_board = np.copy(pos.board)
     new_lib_tracker = LibertyTracker.from_board(new_board)
@@ -92,9 +92,9 @@ def get_mcts_player(network, pos):
     return player
 
 def cross_entropy(policy, new_policy, best_move):
-	'''
+    '''
 		This function calculates normalized cross entropy of new policy wrt policy (without considering best_move)
-	'''
+    '''
      
     p = policy[:best_move]
     p = np.append(p, policy[best_move+1:])
@@ -123,9 +123,9 @@ def saliency_combine(saliency, frame, blur, channel=2):
 
 
 def play_network(network, board=None):
-	'''
+    '''
 		Generates saliency maps of 3 methods given a board position
-	'''
+    '''
     pos = Position(board=board)
     original_moves = {}
     heatmap = np.zeros((N,N), dtype=np.float)
@@ -184,8 +184,8 @@ def play_network(network, board=None):
     
 
     frame = np.zeros((N,N,3))
-    frame = saliency_on_atari_frame(atariV, frame, fudge_factor=256, channel=2)
-    frame = saliency_on_atari_frame(atariP, frame, fudge_factor=256, channel=0)
+    frame = saliency_combine(atariV, frame, blur=256, channel=2)
+    frame = saliency_combine(atariP, frame, blur=256, channel=0)
 
     plt.figure(1)
     plt.imshow(atariV, cmap = 'Blues')
@@ -218,9 +218,9 @@ def play_network(network, board=None):
     plt.show()
 
 def simulate(network, board = None, steps=20):
-	'''
+    '''
 		Simulates rollout of network for given number of steps (to help understand the tactic)
-	'''
+    '''
     pos = Position(board=board)
     for i in range(steps):
         policy, V = network.run(pos)
