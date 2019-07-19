@@ -47,12 +47,12 @@ def make_movie(env_name, checkpoint='*.tar', num_frames=20, first_frame=0, resol
             ix = first_frame+i
             if ix < total_frames: # prevent loop from trying to process a frame ix greater than rollout length
                 frame = history['ins'][ix].squeeze().copy()
-                actor_saliency = score_frame_fmetric(model, history, ix, radius, density, interp_func=occlude, mode='actor')
+                actor_saliency = score_frame(model, history, ix, radius, density, interp_func=occlude, mode='actor')
                 critic_saliency = score_frame(model, history, ix, radius, density, interp_func=occlude, mode='critic')
 
                 frame = saliency_on_atari_frame(actor_saliency, frame, fudge_factor=meta['actor_ff'], channel=2)
                 frame = saliency_on_atari_frame(critic_saliency, frame, fudge_factor=meta['critic_ff'], channel=0)
-                plt.imshow(frame) ; plt.title('Greydanus', fontsize=15)
+                plt.imshow(frame)
                 writer.grab_frame() ; f.clear()
                 
                 tstr = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start))
@@ -76,7 +76,7 @@ def make_movie(env_name, checkpoint='*.tar', num_frames=20, first_frame=0, resol
                 fmetric_saliency = score_frame_fmetric(model, history, ix, radius, density, interp_func=occlude, mode='actor')
 
                 frame_f = saliency_on_atari_frame(fmetric_saliency, frame_f, fudge_factor=meta['actor_ff'], channel=2)
-                plt.imshow(frame_f) ; plt.title('f-metric', fontsize=15)
+                plt.imshow(frame_f)
                 writer.grab_frame() ; f.clear()
                 
                 tstr = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start))
